@@ -1,3 +1,6 @@
-#Test
-instruction
-#Test 2
+i32 main() {
+    i32 a = int 10;
+    f32 b = float 10.01;
+    f54 c = double 20.02;
+    return 0;
+}

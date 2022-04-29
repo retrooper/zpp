@@ -1,0 +1,15 @@
+#pragma once
+namespace zpp {
+    enum TokenType {
+        TOKEN_TYPE_IDENTIFIER,
+        TOKEN_TYPE_STRING_LITERAL,
+        TOKEN_TYPE_INTEGER_LITERAL,
+        TOKEN_TYPE_FLOATING_POINT_LITERAL,
+        TOKEN_TYPE_EQUALS_OPERATOR,
+        TOKEN_TYPE_EQUALS_COMPARISON_OPERATOR,
+        TOKEN_TYPE_OTHER_OPERATOR,
+        TOKEN_TYPE_END
+    };
+
+    
+}
