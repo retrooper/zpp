@@ -4,6 +4,8 @@
 #include <string>
 namespace zpp {
     class SourcePreProcessor {
-        std::string process(std::ifstream file);
+        public:
+            SourcePreProcessor() = default;
+            std::string process(std::ifstream& file);
     };
 }
