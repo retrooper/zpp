@@ -2,6 +2,7 @@
 namespace zpp {
     static void addToken(TokenSet& tokenSet, Token& token) {
         tokenSet.tokens.push_back(token);
+        std::cout << "add: " << token.content << std::endl;
         token.type = TOKEN_TYPE_END;
         token.content.erase();
     }
@@ -71,6 +72,9 @@ namespace zpp {
                         currentToken.type = TOKEN_TYPE_INTEGER_LITERAL;
                         currentToken.content += c;
                     }
+                    else {
+                        currentToken.content += c;
+                    }
                 }
                 else if (c == '.') {
                     //Support decimal shortcuts. For example: '.54'. In reality it is '0.54'.
@@ -92,7 +96,6 @@ namespace zpp {
                 //We use spaces to end a token.
                 else if (c == ' ') {
                     if (currentToken.type != TOKEN_TYPE_STRING_LITERAL) {
-                        currentToken.type = TOKEN_TYPE_END;
                         addToken(tokenSet, currentToken);
                     }
                     else {
@@ -131,8 +134,9 @@ namespace zpp {
                     if (currentToken.type == TOKEN_TYPE_END 
                     || currentToken.type == TOKEN_TYPE_INTEGER_LITERAL
                     || currentToken.type == TOKEN_TYPE_FLOATING_POINT_LITERAL
-                    || currentToken.type == TOKEN_TYPE_EQUALS_OPERATOR)
-                    currentToken.type = TOKEN_TYPE_IDENTIFIER;
+                    || currentToken.type == TOKEN_TYPE_EQUALS_OPERATOR) {
+                        currentToken.type = TOKEN_TYPE_IDENTIFIER;
+                    }
                     currentToken.content += c;
                 }
             }
