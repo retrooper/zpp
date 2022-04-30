@@ -1,6 +1,7 @@
 #include <iostream>
 #include "SourcePreProcessor.h"
 #include "Tokenizer.h"
+#include "Compiler.h"
 using namespace zpp;
 
     static const char* TOKEN_TYPE_MAP[] = {
@@ -21,13 +22,14 @@ int main() {
     SourcePreProcessor preProcessor;
     std::ifstream sourceFile("tests/main.zpp");
     std::string sourceCode = preProcessor.process(sourceFile);
-    //Now we tokenize the source code. The tokenizer identifies words & symbols and stores them in order.
+    //Now we tokenize the source code. The tokenizer identifies words & symbols and categorizes them.
     Tokenizer tokenizer;
-    std::vector<TokenSet> tokenSets = tokenizer.tokenize(sourceCode);
-    for (TokenSet tokenSet : tokenSets) {
-        for (Token token : tokenSet.tokens) {
-            std::cout << "Token Type: " << TOKEN_TYPE_MAP[token.type] << ", Token content: " << token.content << std::endl;
-        }
+    std::vector<Token> tokens = tokenizer.tokenize(sourceCode);
+    for (Token token : tokens) {
+        std::cout << "Token Type: " << TOKEN_TYPE_MAP[token.type] << ", Token content: " << token.content << std::endl;
     }
+    //Now it is time to go through these categorized instructions and transform them into LLVM IR(bytecode) using the LLVM API.
+    Compiler compiler;
+    compiler.compile(tokens);
     return 0;
 }

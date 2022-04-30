@@ -13,5 +13,6 @@ namespace zpp {
     struct Token {
         TokenType type;
         std::string content;
+        uint32_t lineNumber;
     };
 }

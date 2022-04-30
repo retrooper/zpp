@@ -1,10 +1,10 @@
 #include "Tokenizer.h"
 namespace zpp {
-    static void addToken(TokenSet& tokenSet, Token& token) {
+    static void addToken(std::vector<Token>& tokens, Token& token) {
         if (token.type == TOKEN_TYPE_END && token.content == "") {
             return;
         }
-        tokenSet.tokens.push_back(token);
+        tokens.push_back(token);
         token.type = TOKEN_TYPE_END;
         token.content.erase();
     }
@@ -49,114 +49,111 @@ namespace zpp {
         }
     }
 
-    std::vector<TokenSet> Tokenizer::tokenize(std::string& sourceCode) {
-        std::vector<TokenSet> tokenSets;
+    std::vector<Token> Tokenizer::tokenize(std::string& sourceCode) {
+        std::vector<Token> tokens;
         std::vector<std::string> lines = StringHelper::split(sourceCode, "\n");
         for (uint32_t i = 0; i < lines.size(); i++) {
             std::string line = lines[i];
-            uint32_t lineNumber = i + 1;
-            TokenSet tokenSet(lineNumber);
-
-            Token currentToken;
-            currentToken.type = TOKEN_TYPE_END;
+            Token token;
+            token.type = TOKEN_TYPE_END;
+            token.lineNumber = i + 1;
             for (char c : line) {
                 //Is '0'->'9'
                 if (isDigit(c)) {
                     //A digit as a new token or after an operator.
                     //Let us assume it is just an integer literal.
                     //We might correct it to a floating point later on.
-                    if (currentToken.type == TOKEN_TYPE_END
-                    || currentToken.type == TOKEN_TYPE_EQUALS_COMPARISON_OPERATOR
-                    || currentToken.type == TOKEN_TYPE_EQUALS_OPERATOR) {
-                        if (currentToken.type == TOKEN_TYPE_EQUALS_OPERATOR) {
-                            addToken(tokenSet, currentToken);
+                    if (token.type == TOKEN_TYPE_END
+                    || token.type == TOKEN_TYPE_EQUALS_COMPARISON_OPERATOR
+                    || token.type == TOKEN_TYPE_EQUALS_OPERATOR) {
+                        if (token.type == TOKEN_TYPE_EQUALS_OPERATOR) {
+                            addToken(tokens, token);
                         }
-                        currentToken.type = TOKEN_TYPE_INTEGER_LITERAL;
-                        currentToken.content += c;
+                        token.type = TOKEN_TYPE_INTEGER_LITERAL;
+                        token.content += c;
                     }
                     else {
-                        currentToken.content += c;
+                        token.content += c;
                     }
                 }
                 else if (c == '.') {
                     //Support decimal shortcuts. For example: '.54'. In reality it is '0.54'.
-                    if (currentToken.type == TOKEN_TYPE_END) {
-                        currentToken.type == TOKEN_TYPE_FLOATING_POINT_LITERAL;
-                        currentToken.content += c;
+                    if (token.type == TOKEN_TYPE_END) {
+                        token.type == TOKEN_TYPE_FLOATING_POINT_LITERAL;
+                        token.content += c;
                     }
                     //Ordinary decimal. For example '3.53'
-                    else if (currentToken.type == TOKEN_TYPE_INTEGER_LITERAL) {
+                    else if (token.type == TOKEN_TYPE_INTEGER_LITERAL) {
                         //It was an integer, now we added a . right after.
-                        currentToken.type = TOKEN_TYPE_FLOATING_POINT_LITERAL;
-                        currentToken.content += c;
+                        token.type = TOKEN_TYPE_FLOATING_POINT_LITERAL;
+                        token.content += c;
                     }
                     //Ignore if it is part of a string
-                    else if (currentToken.type == TOKEN_TYPE_STRING_LITERAL) {
-                        currentToken.content += c;
+                    else if (token.type == TOKEN_TYPE_STRING_LITERAL) {
+                        token.content += c;
                     }
                 }
                 //We use spaces to end a token.
                 else if (c == ' ') {
-                    if (currentToken.type != TOKEN_TYPE_STRING_LITERAL) {
-                        addToken(tokenSet, currentToken);
+                    if (token.type != TOKEN_TYPE_STRING_LITERAL) {
+                        addToken(tokens, token);
                     }
                     else {
-                        currentToken.content += " ";
+                        token.content += " ";
                     }
                 } 
                 //First assume it is an equals operation. 
                 //Later on we might correct it to a comparison check operator.
                 else if (c == '=') {
-                    if (currentToken.type != TOKEN_TYPE_EQUALS_OPERATOR) {
-                        currentToken.type = TOKEN_TYPE_EQUALS_OPERATOR;
-                        currentToken.content = '=';
+                    if (token.type != TOKEN_TYPE_EQUALS_OPERATOR) {
+                        token.type = TOKEN_TYPE_EQUALS_OPERATOR;
+                        token.content = '=';
                     }
                     else {
                         //Last token was already an equals operator. This must be a double equals.
-                        currentToken.type = TOKEN_TYPE_EQUALS_COMPARISON_OPERATOR;
-                        currentToken.content = "==";
-                        addToken(tokenSet, currentToken);
+                        token.type = TOKEN_TYPE_EQUALS_COMPARISON_OPERATOR;
+                        token.content = "==";
+                        addToken(tokens, token);
                     }
                 }
                 else if (c == ';') {
-                    if (currentToken.type != TOKEN_TYPE_STRING_LITERAL) {
-                        addToken(tokenSet, currentToken);
-                        currentToken.type = TOKEN_TYPE_END_LINE;
-                        currentToken.content = ";";
-                        addToken(tokenSet, currentToken); 
+                    if (token.type != TOKEN_TYPE_STRING_LITERAL) {
+                        addToken(tokens, token);
+                        token.type = TOKEN_TYPE_END_LINE;
+                        token.content = ";";
+                        addToken(tokens, token);
                     }
                     else {
-                        currentToken.content += c;
+                        token.content += c;
                     }
                 }
                 else if (isOtherOperator(c)) {
-                    if (currentToken.type == TOKEN_TYPE_IDENTIFIER && c == '(') {
-                        currentToken.type = TOKEN_TYPE_METHOD_SECTION;
-                        currentToken.content += c;
+                    if (token.type == TOKEN_TYPE_IDENTIFIER && c == '(') {
+                        token.type = TOKEN_TYPE_METHOD_SECTION;
+                        token.content += c;
 
                     }
-                    else if (currentToken.type == TOKEN_TYPE_METHOD_SECTION && c == ')') {
-                        currentToken.content += c;
-                        addToken(tokenSet, currentToken);
+                    else if (token.type == TOKEN_TYPE_METHOD_SECTION && c == ')') {
+                        token.content += c;
+                        addToken(tokens, token);
                     }
                     else {
-                        currentToken.type = TOKEN_TYPE_OTHER_OPERATOR;
-                        currentToken.content += c;
+                        token.type = TOKEN_TYPE_OTHER_OPERATOR;
+                        token.content += c;
                     }
                 }
                 else {
-                    if (currentToken.type == TOKEN_TYPE_END 
-                    || currentToken.type == TOKEN_TYPE_INTEGER_LITERAL
-                    || currentToken.type == TOKEN_TYPE_FLOATING_POINT_LITERAL
-                    || currentToken.type == TOKEN_TYPE_EQUALS_OPERATOR) {
-                        currentToken.type = TOKEN_TYPE_IDENTIFIER;
+                    if (token.type == TOKEN_TYPE_END 
+                    || token.type == TOKEN_TYPE_INTEGER_LITERAL
+                    || token.type == TOKEN_TYPE_FLOATING_POINT_LITERAL
+                    || token.type == TOKEN_TYPE_EQUALS_OPERATOR) {
+                        token.type = TOKEN_TYPE_IDENTIFIER;
                     }
-                    currentToken.content += c;
+                    token.content += c;
                 }
             }
-            addToken(tokenSet, currentToken);
-            tokenSets.push_back(tokenSet);
+            addToken(tokens, token);
         }
-        return tokenSets;
+        return tokens;
     }
 }

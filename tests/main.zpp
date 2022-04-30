@@ -4,3 +4,8 @@ i32 main() {
     f64 c = 20.02;
     return 0;
 }
+
+f32 main2() {
+    i32 c = 50;
+    return 10.0;
+}
