@@ -59,12 +59,30 @@ namespace zpp {
                     std::string methodName = methodSectionStr.substr(0, methodSectionStr.find('('));
                     std::cout << "name of method: " << methodName << std::endl;
                     if (hasNextToken(TOKEN_TYPE_OTHER_OPERATOR, "{")) {
-                        auto potTk = nextToken();
-                        if (potTk.has_value()) {
-                            Token tk = potTk.value();
+                        auto nt = nextToken();
+                        if (nt.has_value()) {
+                            Token tk = nt.value();
                             for (; tk.type != TOKEN_TYPE_OTHER_OPERATOR && tk.content != "}" && hasNextToken(); tk = nextToken().value()) {
                                 //Function body code
-                                std::cout << "Body token type: " << tk.type << ", body token content: " << tk.content << std::endl;
+                                if (nt.has_value() && nt.value().type == TOKEN_TYPE_IDENTIFIER) {
+                                    if (nt.value().content == "i32") {
+                                        //They are declaring a variable
+                                        nt = nextToken(TOKEN_TYPE_IDENTIFIER);
+                                        if (nt.has_value()) {
+                                            std::string varName = nt.value().content;
+                                            if (hasNextToken(TOKEN_TYPE_EQUALS_OPERATOR)) {
+                                                nt = nextToken();
+                                                if (nt.has_value() && nt.value().type == TOKEN_TYPE_INTEGER_LITERAL) {
+                                                    int integerValue = std::stoi(nt.value().content);
+                                                    if (hasNextToken(TOKEN_TYPE_END_LINE)) {
+                                                        std::cout << "Var type: " << "i32, " << "Var name: " << varName << ", " << "Var int value: " << integerValue << std::endl;
+                                                        return;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
