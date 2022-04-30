@@ -3,7 +3,7 @@
 #include "Tokenizer.h"
 using namespace zpp;
 
-    static const char* tokenTypeMap[] = {
+    static const char* TOKEN_TYPE_MAP[] = {
         "TOKEN_TYPE_IDENTIFIER",
         "TOKEN_TYPE_STRING_LITERAL",
         "TOKEN_TYPE_INTEGER_LITERAL",
@@ -11,6 +11,8 @@ using namespace zpp;
         "TOKEN_TYPE_EQUALS_OPERATOR",
         "TOKEN_TYPE_EQUALS_COMPARISON_OPERATOR",
         "TOKEN_TYPE_OTHER_OPERATOR",
+        "TOKEN_TYPE_METHOD_SECTION",
+        "TOKEN_TYPE_END_LINE",
         "TOKEN_TYPE_END"
     };
 int main() {
@@ -24,7 +26,7 @@ int main() {
     std::vector<TokenSet> tokenSets = tokenizer.tokenize(sourceCode);
     for (TokenSet tokenSet : tokenSets) {
         for (Token token : tokenSet.tokens) {
-            std::cout << "Token Type: " << tokenTypeMap[token.type] << ", Token content: " << token.content << std::endl;
+            std::cout << "Token Type: " << TOKEN_TYPE_MAP[token.type] << ", Token content: " << token.content << std::endl;
         }
     }
     return 0;

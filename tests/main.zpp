@@ -1,6 +1,6 @@
 i32 main() {
-    i32 a = int 10;
-    f32 b = float 10.01;
-    f64 c = double 20.02;
+    i32 a = 10;
+    f32 b = 10.01;
+    f64 c = 20.02;
     return 0;
 }

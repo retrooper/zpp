@@ -1,8 +1,10 @@
 #include "Tokenizer.h"
 namespace zpp {
     static void addToken(TokenSet& tokenSet, Token& token) {
+        if (token.type == TOKEN_TYPE_END && token.content == "") {
+            return;
+        }
         tokenSet.tokens.push_back(token);
-        std::cout << "add: " << token.content << std::endl;
         token.type = TOKEN_TYPE_END;
         token.content.erase();
     }
@@ -56,6 +58,7 @@ namespace zpp {
             TokenSet tokenSet(lineNumber);
 
             Token currentToken;
+            currentToken.type = TOKEN_TYPE_END;
             for (char c : line) {
                 //Is '0'->'9'
                 if (isDigit(c)) {
@@ -67,7 +70,6 @@ namespace zpp {
                     || currentToken.type == TOKEN_TYPE_EQUALS_OPERATOR) {
                         if (currentToken.type == TOKEN_TYPE_EQUALS_OPERATOR) {
                             addToken(tokenSet, currentToken);
-                            std::cout << "added" << std::endl;
                         }
                         currentToken.type = TOKEN_TYPE_INTEGER_LITERAL;
                         currentToken.content += c;
@@ -118,17 +120,29 @@ namespace zpp {
                 }
                 else if (c == ';') {
                     if (currentToken.type != TOKEN_TYPE_STRING_LITERAL) {
-                        currentToken.type = TOKEN_TYPE_END;
-                        currentToken.content += c; 
                         addToken(tokenSet, currentToken);
+                        currentToken.type = TOKEN_TYPE_END_LINE;
+                        currentToken.content = ";";
+                        addToken(tokenSet, currentToken); 
                     }
                     else {
                         currentToken.content += c;
                     }
                 }
                 else if (isOtherOperator(c)) {
-                    currentToken.type = TOKEN_TYPE_OTHER_OPERATOR;
-                    currentToken.content += c;
+                    if (currentToken.type == TOKEN_TYPE_IDENTIFIER && c == '(') {
+                        currentToken.type = TOKEN_TYPE_METHOD_SECTION;
+                        currentToken.content += c;
+
+                    }
+                    else if (currentToken.type == TOKEN_TYPE_METHOD_SECTION && c == ')') {
+                        currentToken.content += c;
+                        addToken(tokenSet, currentToken);
+                    }
+                    else {
+                        currentToken.type = TOKEN_TYPE_OTHER_OPERATOR;
+                        currentToken.content += c;
+                    }
                 }
                 else {
                     if (currentToken.type == TOKEN_TYPE_END 
@@ -141,6 +155,7 @@ namespace zpp {
                 }
             }
             addToken(tokenSet, currentToken);
+            tokenSets.push_back(tokenSet);
         }
         return tokenSets;
     }
